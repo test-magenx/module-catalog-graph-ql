@@ -80,11 +80,9 @@ class CategoryTree
      *
      * @param ResolveInfo $resolveInfo
      * @param int $rootCategoryId
-     * @param int $storeId
      * @return \Iterator
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function getTree(ResolveInfo $resolveInfo, int $rootCategoryId, int $storeId): \Iterator
+    public function getTree(ResolveInfo $resolveInfo, int $rootCategoryId): \Iterator
     {
         $categoryQuery = $resolveInfo->fieldNodes[0];
         $collection = $this->collectionFactory->create();

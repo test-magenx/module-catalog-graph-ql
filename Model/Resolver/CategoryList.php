@@ -81,7 +81,8 @@ class CategoryList implements ResolverInterface
         } catch (InputException $e) {
             throw new GraphQlInputException(__($e->getMessage()));
         }
-        return $this->fetchCategories($rootCategoryIds, $info, (int) $store->getId());
+
+        return $this->fetchCategories($rootCategoryIds, $info);
     }
 
     /**
@@ -89,14 +90,13 @@ class CategoryList implements ResolverInterface
      *
      * @param array $categoryIds
      * @param ResolveInfo $info
-     * @param int $storeId
      * @return array
      */
-    private function fetchCategories(array $categoryIds, ResolveInfo $info, int $storeId)
+    private function fetchCategories(array $categoryIds, ResolveInfo $info)
     {
         $fetchedCategories = [];
         foreach ($categoryIds as $categoryId) {
-            $categoryTree = $this->categoryTree->getTree($info, $categoryId, $storeId);
+            $categoryTree = $this->categoryTree->getTree($info, $categoryId);
             if (empty($categoryTree)) {
                 continue;
             }

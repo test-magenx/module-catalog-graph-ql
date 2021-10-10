@@ -63,13 +63,6 @@ class PriceRange implements ResolverInterface
         $product = $value['model'];
         $product->unsetData('minimal_price');
 
-        if ($context) {
-            $customerGroupId = $context->getExtensionAttributes()->getCustomerGroupId();
-            if ($customerGroupId !== null) {
-                $product->setCustomerGroupId($customerGroupId);
-            }
-        }
-
         $requestedFields = $info->getFieldSelection(10);
         $returnArray = [];
 

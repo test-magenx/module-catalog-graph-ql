@@ -132,7 +132,7 @@ class Product
             $this->searchCriteriaBuilder->create(),
             $this->attributeCodes,
             false,
-            false
+            true
         );
 
         /** @var \Magento\Catalog\Model\Product $product */

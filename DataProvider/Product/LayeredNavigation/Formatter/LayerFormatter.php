@@ -18,16 +18,14 @@ class LayerFormatter
      * @param string $layerName
      * @param string $itemsCount
      * @param string $requestName
-     * @param int $position
      * @return array
      */
-    public function buildLayer($layerName, $itemsCount, $requestName, $position = null): array
+    public function buildLayer($layerName, $itemsCount, $requestName): array
     {
         return [
             'label' => $layerName,
             'count' => $itemsCount,
-            'attribute_code' => $requestName,
-            'position' => isset($position) ? (int)$position : null
+            'attribute_code' => $requestName
         ];
     }
 

@@ -8,7 +8,6 @@ declare(strict_types=1);
 namespace Magento\CatalogGraphQl\DataProvider\Product\LayeredNavigation;
 
 use Magento\Framework\App\ResourceConnection;
-use Magento\Framework\DB\Select;
 use Magento\Store\Model\Store;
 
 /**
@@ -63,7 +62,6 @@ class AttributeOptionProvider
                     'attribute_id' => 'a.attribute_id',
                     'attribute_code' => 'a.attribute_code',
                     'attribute_label' => 'a.frontend_label',
-                    'position' => 'attribute_configuration.position'
                 ]
             )
             ->joinLeft(
@@ -72,11 +70,6 @@ class AttributeOptionProvider
                 [
                     'attribute_store_label' => 'attribute_label.value',
                 ]
-            )
-            ->joinLeft(
-                ['attribute_configuration' => $this->resourceConnection->getTableName('catalog_eav_attribute')],
-                'a.attribute_id = attribute_configuration.attribute_id',
-                []
             )
             ->joinLeft(
                 ['options' => $this->resourceConnection->getTableName('eav_attribute_option')],
@@ -102,8 +95,6 @@ class AttributeOptionProvider
             )->where(
                 'a.attribute_id = options.attribute_id AND option_value.store_id = ?',
                 Store::DEFAULT_STORE_ID
-            )->order(
-                'options.sort_order ' . Select::SQL_ASC
             );
 
         $select->where('option_value.option_id IN (?)', $optionIds);
@@ -121,11 +112,11 @@ class AttributeOptionProvider
     /**
      * Format result
      *
-     * @param Select $select
+     * @param \Magento\Framework\DB\Select $select
      * @return array
      * @throws \Zend_Db_Statement_Exception
      */
-    private function formatResult(Select $select): array
+    private function formatResult(\Magento\Framework\DB\Select $select): array
     {
         $statement = $this->resourceConnection->getConnection()->query($select);
 
@@ -137,13 +128,10 @@ class AttributeOptionProvider
                     'attribute_code' => $option['attribute_code'],
                     'attribute_label' => $option['attribute_store_label']
                         ? $option['attribute_store_label'] : $option['attribute_label'],
-                    'position' => $option['position'],
                     'options' => [],
                 ];
             }
-            if (!empty($option['option_id'])) {
-                $result[$option['attribute_code']]['options'][$option['option_id']] = $option['option_label'];
-            }
+            $result[$option['attribute_code']]['options'][$option['option_id']] = $option['option_label'];
         }
 
         return $result;
