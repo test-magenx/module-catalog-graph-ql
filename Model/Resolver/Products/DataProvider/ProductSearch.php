@@ -8,18 +8,16 @@ declare(strict_types=1);
 namespace Magento\CatalogGraphQl\Model\Resolver\Products\DataProvider;
 
 use Magento\Catalog\Api\Data\ProductSearchResultsInterfaceFactory;
-use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
+use Magento\CatalogGraphQl\Model\Resolver\Products\DataProvider\Product\CollectionPostProcessor;
 use Magento\CatalogGraphQl\Model\Resolver\Products\DataProvider\Product\CollectionProcessorInterface;
-use Magento\CatalogGraphQl\Model\Resolver\Products\DataProvider\Product\CollectionPostProcessorInterface;
 use Magento\CatalogGraphQl\Model\Resolver\Products\DataProvider\ProductSearch\ProductCollectionSearchCriteriaBuilder;
 use Magento\CatalogSearch\Model\ResourceModel\Fulltext\Collection\SearchResultApplierFactory;
 use Magento\CatalogSearch\Model\ResourceModel\Fulltext\Collection\SearchResultApplierInterface;
 use Magento\Framework\Api\Search\SearchResultInterface;
 use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Framework\Api\SearchResultsInterface;
-use Magento\Framework\App\ObjectManager;
 use Magento\GraphQl\Model\Query\ContextInterface;
 
 /**
@@ -43,7 +41,7 @@ class ProductSearch
     private $collectionPreProcessor;
 
     /**
-     * @var CollectionPostProcessorInterface
+     * @var CollectionPostProcessor
      */
     private $collectionPostProcessor;
 
@@ -58,27 +56,20 @@ class ProductSearch
     private $searchCriteriaBuilder;
 
     /**
-     * @var Visibility
-     */
-    private $catalogProductVisibility;
-
-    /**
      * @param CollectionFactory $collectionFactory
      * @param ProductSearchResultsInterfaceFactory $searchResultsFactory
      * @param CollectionProcessorInterface $collectionPreProcessor
-     * @param CollectionPostProcessorInterface $collectionPostProcessor
+     * @param CollectionPostProcessor $collectionPostProcessor
      * @param SearchResultApplierFactory $searchResultsApplierFactory
      * @param ProductCollectionSearchCriteriaBuilder $searchCriteriaBuilder
-     * @param Visibility $catalogProductVisibility
      */
     public function __construct(
         CollectionFactory $collectionFactory,
         ProductSearchResultsInterfaceFactory $searchResultsFactory,
         CollectionProcessorInterface $collectionPreProcessor,
-        CollectionPostProcessorInterface $collectionPostProcessor,
+        CollectionPostProcessor $collectionPostProcessor,
         SearchResultApplierFactory $searchResultsApplierFactory,
-        ProductCollectionSearchCriteriaBuilder $searchCriteriaBuilder,
-        Visibility $catalogProductVisibility
+        ProductCollectionSearchCriteriaBuilder $searchCriteriaBuilder
     ) {
         $this->collectionFactory = $collectionFactory;
         $this->searchResultsFactory = $searchResultsFactory;
@@ -86,7 +77,6 @@ class ProductSearch
         $this->collectionPostProcessor = $collectionPostProcessor;
         $this->searchResultApplierFactory = $searchResultsApplierFactory;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
-        $this->catalogProductVisibility = $catalogProductVisibility;
     }
 
     /**
@@ -116,12 +106,9 @@ class ProductSearch
             $this->getSortOrderArray($searchCriteriaForCollection)
         )->apply();
 
-        $collection->setFlag('search_resut_applied', true);
-
-        $collection->setVisibility($this->catalogProductVisibility->getVisibleInSiteIds());
         $this->collectionPreProcessor->process($collection, $searchCriteriaForCollection, $attributes, $context);
         $collection->load();
-        $this->collectionPostProcessor->process($collection, $attributes, $context);
+        $this->collectionPostProcessor->process($collection, $attributes);
 
         $searchResults = $this->searchResultsFactory->create();
         $searchResults->setSearchCriteria($searchCriteriaForCollection);

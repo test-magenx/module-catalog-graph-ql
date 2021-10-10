@@ -9,13 +9,12 @@ namespace Magento\CatalogGraphQl\Model\Resolver\Category;
 
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\Product\Visibility;
-use Magento\CatalogGraphQl\Model\Resolver\Products\DataProvider\Product\CompositeCollectionProcessor;
+use Magento\CatalogGraphQl\Model\Resolver\Products\DataProvider\Product\CollectionProcessor\StockProcessor;
 use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Framework\GraphQl\Exception\GraphQlInputException;
 use Magento\Framework\GraphQl\Schema\Type\ResolveInfo;
 use Magento\Framework\GraphQl\Config\Element\Field;
 use Magento\Framework\GraphQl\Query\ResolverInterface;
-
 
 /**
  * Retrieves products count for a category
@@ -28,9 +27,9 @@ class ProductsCount implements ResolverInterface
     private $catalogProductVisibility;
 
     /**
-     * @var CompositeCollectionProcessor
+     * @var StockProcessor
      */
-    private $collectionProcessor;
+    private $stockProcessor;
 
     /**
      * @var SearchCriteriaInterface
@@ -40,16 +39,16 @@ class ProductsCount implements ResolverInterface
     /**
      * @param Visibility $catalogProductVisibility
      * @param SearchCriteriaInterface $searchCriteria
-     * @param CompositeCollectionProcessor $collectionProcessor
+     * @param StockProcessor $stockProcessor
      */
     public function __construct(
         Visibility $catalogProductVisibility,
         SearchCriteriaInterface $searchCriteria,
-        CompositeCollectionProcessor $collectionProcessor
+        StockProcessor $stockProcessor
     ) {
         $this->catalogProductVisibility = $catalogProductVisibility;
         $this->searchCriteria = $searchCriteria;
-        $this->collectionProcessor = $collectionProcessor;
+        $this->stockProcessor = $stockProcessor;
     }
 
     /**
@@ -64,14 +63,8 @@ class ProductsCount implements ResolverInterface
         $category = $value['model'];
         $productsCollection = $category->getProductCollection();
         $productsCollection->setVisibility($this->catalogProductVisibility->getVisibleInSiteIds());
-        $productsCollection = $this->collectionProcessor->process(
-            $productsCollection,
-            $this->searchCriteria,
-            [],
-            $context
-        );
-        $size = $productsCollection->getSize();
+        $productsCollection = $this->stockProcessor->process($productsCollection, $this->searchCriteria, []);
 
-        return $size;
+        return $productsCollection->getSize();
     }
 }
